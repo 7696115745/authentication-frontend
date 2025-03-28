@@ -1,48 +1,52 @@
-"use client"
-import React from "react";
+"use client";
+import React, { useState } from "react";
 import Link from "next/link";
 import { toast, ToastContainer } from "react-toastify";
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+
 const ForgotPassword = () => {
-const [email,setEmail]=useState("")
-const router=useRouter()
-     const handleForgetPassword = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-    
-        if (!email) {
-          toast.error("email is required!");
-          return;
-        }
-        
-        if (!/^\S+@\S+\.\S+$/.test(email)) {
-          toast.error("Please enter a valid email address.");
-          return;
-        }
-     
-        try {
-          const url = process.env.NEXT_PUBLIC_API_URL;
-        
-          
-          const res = await fetch(`${url}account/forgetpassword`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({user_email:email}),
-          });
-          
-          const result = await res.json();
-          
-          if (res.status === 200 && result.success) {
-             setEmail("")
-             router.push("/auth/verification")
-           }  
-        } catch (error: any) {
-          console.error("Error occurred:", error);
-          toast.error("An unexpected error occurred.");
-        }
-      };
+  const [email, setEmail] = useState("");
+  const router = useRouter();
+
+  const handleForgetPassword = async (e:any) => {
+    e.preventDefault();
+
+    if (!email) {
+      toast.error("Email is required!");
+      return;
+    }
+    if (!/^\S+@\S+\.\S+$/.test(email)) {
+      toast.error("Please enter a valid email address.");
+      return;
+    }
+
+    try {
+      const url = process.env.NEXT_PUBLIC_API_URL;
+
+      const res = await fetch(`${url}account/forgetpassword`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ user_email: email }),
+      });
+
+      const result = await res.json();
+
+      if (res.status === 200 && result.success) {
+        localStorage.setItem("email",email)
+        setEmail("");
+        toast.success("Reset link sent successfully!");
+        router.push("/auth/verification");
+      } else {
+        toast.error(result.message || "Something went wrong.");
+      }
+    } catch (error: any) {
+      console.error("Error occurred:", error);
+      toast.error("An unexpected error occurred.");
+    }
+  };
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="w-full max-w-md p-6 bg-white rounded-2xl shadow-lg">
@@ -59,9 +63,9 @@ const router=useRouter()
               type="text"
               id="email"
               name="email"
-            value={email}           
-            onChange={(e:any)=>setEmail(e.target.value)}
-            placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
               className="w-full px-4 py-2 mt-2 text-gray-700 bg-gray-100 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
@@ -72,13 +76,9 @@ const router=useRouter()
             Send Reset Link
           </button>
           <ToastContainer position="bottom-center" />
-
         </form>
         <div className="mt-4 text-center">
-          <Link
-            href="/auth/login"
-            className="text-sm text-blue-500 hover:underline hover:text-blue-600"
-          >
+          <Link href="/auth/login" className="text-sm text-blue-500 hover:underline hover:text-blue-600">
             Back to Login
           </Link>
         </div>
